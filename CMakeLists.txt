@@ -22,6 +22,7 @@ include (GenerateExportHeader)
 
 add_definitions("-DPROJECT_VERSION=\"${PROJECT_VERSION}\"" )
 add_definitions("-DNOMINMAX -DFMT_HEADER_ONLY")
+add_definitions("-DCMAKE_OSX_ARCHITECTURES=arm64")
 
 # removed -DCPU86
 

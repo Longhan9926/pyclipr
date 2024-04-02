@@ -412,6 +412,54 @@ public:
     uint64_t scaleFactor;
 };
 
+
+Clipper2Lib::Paths64 MinkowskiSum(pybind11::array_t<double> &pattern,
+                                  pybind11::array_t<double> &path,
+                                  bool isOpen)
+{
+    Clipper2Lib::Path64 p;
+    Clipper2Lib::Path64 q;
+
+    if (pattern.ndim() != 2)
+        throw std::runtime_error("Number of dimensions must be two");
+
+    if (!(pattern.shape(1) == 2 || pattern.shape(1) == 3))
+        throw std::runtime_error("Pattern must be nx2, or nx3");
+
+    if (path.ndim() != 2)
+        throw std::runtime_error("Number of dimensions must be two");
+
+    if (!(path.shape(1) == 2 || path.shape(1) == 3))
+        throw std::runtime_error("Path must be nx2, or nx3");
+
+    // Resize the path list
+    p.reserve(pattern.shape(0));
+    q.reserve(path.shape(0));
+
+    auto r = pattern.unchecked<2>();
+
+    if(pattern.shape(1) == 2) {
+        for(uint64_t i=0; i < pattern.shape(0); i++)
+            p.push_back(Clipper2Lib::Point64(r(i,0), r(i,1)));
+    } else {
+        for(uint64_t i=0; i < pattern.shape(0); i++)
+            p.push_back(Clipper2Lib::Point64(r(i,0), r(i,1), r(i,2)));
+    }
+
+    auto s = path.unchecked<2>();
+
+    if(path.shape(1) == 2) {
+        for(uint64_t i=0; i < path.shape(0); i++)
+            q.push_back(Clipper2Lib::Point64(s(i,0), s(i,1)));
+    } else {
+        for(uint64_t i=0; i < path.shape(0); i++)
+            q.push_back(Clipper2Lib::Point64(s(i,0), s(i,1), s(i,2)));
+    }
+
+    return Clipper2Lib::MinkowskiSum(p, q, !isOpen);
+}
+
+
 } // end of namespace pyclipr
 
 PYBIND11_MODULE(pyclipr, m) {
