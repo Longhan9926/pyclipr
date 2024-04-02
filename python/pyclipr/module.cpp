@@ -413,8 +413,8 @@ public:
 };
 
 
-Clipper2Lib::Paths64 MinkowskiSum(pybind11::array_t<double> &pattern,
-                                  pybind11::array_t<double> &path,
+py::object MinkowskiSum(py::array_t<double> &pattern,
+                                  py::array_t<double> &path,
                                   bool isOpen)
 {
     Clipper2Lib::Path64 p;
@@ -456,7 +456,24 @@ Clipper2Lib::Paths64 MinkowskiSum(pybind11::array_t<double> &pattern,
             q.push_back(Clipper2Lib::Point64(s(i,0), s(i,1), s(i,2)));
     }
 
-    return Clipper2Lib::MinkowskiSum(p, q, !isOpen);
+//    return Clipper2Lib::MinkowskiSum(p, q, isOpen);
+    Clipper2Lib::Paths64 res = Clipper2Lib::MinkowskiSum(p, q, isOpen);
+
+    std::vector<EigenVec2d> closedOut;
+
+    for (auto &path : res) {
+
+        EigenVec2d eigPath(path.size(), 2);
+
+        for (uint64_t i=0; i < path.size(); i++) {
+            eigPath(i,0) = double(path[i].x);
+            eigPath(i,1) = double(path[i].y);
+        }
+
+        closedOut.push_back(eigPath);
+    }
+
+    return py::cast(closedOut);
 }
 
 
@@ -800,7 +817,16 @@ PYBIND11_MODULE(pyclipr, m) {
          )
         .def("clear", &pyclipr::ClipperOffset::clear, R"(The clear method removes all the paths from the ClipperOffset object.)");
 
+    m.def("MinkowskiSum", &pyclipr::MinkowskiSum, py::arg("pattern"), py::arg("path"), py::arg("isOpen") = false, R"(
+        The MinkowskiSum function calculates the Minkowski Sum of a pattern and a path. The pattern is a list of 2D points
+        that define the pattern. The path is a list of 2D points that define the path. The isOpen parameter is a boolean
+        value that indicates whether the path is open or closed. The function returns the Minkowski Sum of the pattern and path.
 
+        :param pattern: A list of 2D points that define the pattern
+        :param path: A list of 2D points that define the path
+        :param isOpen: A boolean value that indicates whether the path is open or closed
+        :return: The Minkowski Sum of the pattern and path
+    )");
 
 #ifdef PROJECT_VERSION
     m.attr("__version__") = "PROJECT_VERSION";

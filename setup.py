@@ -136,6 +136,7 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
+            cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=arm64']
             build_args += ['--', '-j4']
 
         cmake_args += ['-DCMAKE_INSTALL_PREFIX=' + '.']
@@ -151,7 +152,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='pyclipr',
-    version='0.1.7',
+    version='0.1.7b1',
     author='Luke Parry',
     author_email='dev@lukeparry.uk',
     url='https://github.com/drlukeparry/pyclipr',
